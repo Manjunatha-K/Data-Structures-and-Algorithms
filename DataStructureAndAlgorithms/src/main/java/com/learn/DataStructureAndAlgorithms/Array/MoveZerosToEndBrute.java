@@ -1,12 +1,11 @@
 package com.learn.DataStructureAndAlgorithms.Array;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-public class MovingZerosToEndBrute {
+public class MoveZerosToEndBrute {
     private static void moveZerosToEnd(int[] arr) {
         List<Integer> temp = new ArrayList<>();
         for (int i = 0; i < arr.length; i++) {
