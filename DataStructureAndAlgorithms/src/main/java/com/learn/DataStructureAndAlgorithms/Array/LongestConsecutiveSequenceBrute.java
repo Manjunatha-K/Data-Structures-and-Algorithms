@@ -14,7 +14,6 @@ public class LongestConsecutiveSequenceBrute {
                         x = x + 1;
                         isfound = true;
                         break;
-
                     }
                 }
                 if (!isfound)
