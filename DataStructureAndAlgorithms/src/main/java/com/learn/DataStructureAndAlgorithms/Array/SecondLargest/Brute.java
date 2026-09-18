@@ -1,7 +1,7 @@
 package com.learn.DataStructureAndAlgorithms.Array.SecondLargest;
 
 import java.util.Scanner;
-
+// test
 public class Brute {
     private static void findSecondLargest(int[] arr) {
         int largest = Integer.MIN_VALUE;
