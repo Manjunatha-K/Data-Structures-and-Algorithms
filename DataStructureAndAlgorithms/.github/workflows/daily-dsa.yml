@@ -1,7 +1,6 @@
 name: Daily DSA Commit
 
 on:
-
   # Run every day at 10:00 AM IST
   schedule:
     - cron: "30 4 * * *"
@@ -13,149 +12,23 @@ permissions:
   contents: write
 
 jobs:
-
-  daily-dsa:
-
+  daily-commit:
     runs-on: ubuntu-latest
 
     steps:
-
-      # ------------------------------------------------
-      # Checkout MAIN branch
-      # ------------------------------------------------
-
-      - name: Checkout main
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          fetch-depth: 0
 
-      # ------------------------------------------------
-      # Checkout feature/linkedList branch
-      # This contains all 14 days of DSA solutions
-      # ------------------------------------------------
-
-      - name: Checkout feature/linkedList
-        uses: actions/checkout@v4
-        with:
-          ref: feature/linkedList
-          path: dsa-source
-
-      # ------------------------------------------------
-      # Determine current vacation day
-      # ------------------------------------------------
-
-      - name: Determine vacation day
+      - name: Configure Git
         run: |
-
-          # CHANGE THIS TO YOUR ACTUAL START DATE
-          START_DATE="2026-10-07"
-
-          # Current date in India
-          CURRENT_DATE=$(TZ=Asia/Kolkata date +"%Y-%m-%d")
-
-          # Convert both dates to epoch seconds
-          START_SECONDS=$(TZ=Asia/Kolkata date -d "$START_DATE 00:00:00" +%s)
-
-          CURRENT_SECONDS=$(TZ=Asia/Kolkata date -d "$CURRENT_DATE 00:00:00" +%s)
-
-          # Calculate vacation day
-          DAY=$(( (CURRENT_SECONDS - START_SECONDS) / 86400 + 1 ))
-
-          echo "======================================"
-          echo "Current date : $CURRENT_DATE"
-          echo "Vacation day : $DAY"
-          echo "======================================"
-
-          echo "DAY=$DAY" >> "$GITHUB_ENV"
-
-      # ------------------------------------------------
-      # Release today's DSA solution
-      # ------------------------------------------------
-
-      - name: Release today's DSA solution
-        run: |
-
-          # Make sure the day is between 1 and 14
-
-          if [ "$DAY" -lt 1 ] || [ "$DAY" -gt 14 ]; then
-
-            echo "Vacation period is over."
-            echo "Nothing to commit."
-
-            exit 0
-
-          fi
-
-          # Convert:
-          # 1  -> day01
-          # 2  -> day02
-          # ...
-          # 14 -> day14
-
-          DAY_FOLDER=$(printf "day%02d" "$DAY")
-
-          echo "Releasing solution for: $DAY_FOLDER"
-
-          # Source location
-          SOURCE_PATH="dsa-source/src/main/java/com/learn/DataStructureAndAlgorithms/vacation/$DAY_FOLDER"
-
-          # Target location in main
-          TARGET_PATH="src/main/java/com/learn/DataStructureAndAlgorithms/vacation/$DAY_FOLDER"
-
-          echo "Source:"
-          echo "$SOURCE_PATH"
-
-          echo "Target:"
-          echo "$TARGET_PATH"
-
-          # Verify source exists
-
-          if [ ! -d "$SOURCE_PATH" ]; then
-
-            echo "ERROR: $SOURCE_PATH does not exist."
-
-            exit 1
-
-          fi
-
-          # Create target directory
-
-          mkdir -p "$TARGET_PATH"
-
-          # Copy today's solution
-
-          cp -r "$SOURCE_PATH/." "$TARGET_PATH/"
-
-          echo "Today's solution copied successfully."
-
-          # Show what was copied
-
-          echo "Files released:"
-          find "$TARGET_PATH" -type f
-
-      # ------------------------------------------------
-      # Commit today's solution
-      # ------------------------------------------------
-
-      - name: Commit today's solution
-        run: |
-
           git config user.name "github-actions[bot]"
-
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add "src/main/java/com/learn/DataStructureAndAlgorithms/vacation/"
-
-          # Only commit if there are changes
-
-          if git diff --cached --quiet; then
-
-            echo "No changes to commit."
-
-            exit 0
-
-          fi
-
-          git commit -m "Day $DAY - DSA solution"
-
-          git push origin main
+      - name: Create daily commit
+        run: |
+          echo "Daily DSA commit - $(date)" >> daily-dsa-log.txt
+          git add daily-dsa-log.txt
+          git commit -m "Daily DSA commit" || echo "Nothing to commit"
+          git push
