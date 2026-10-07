@@ -5,6 +5,7 @@ on:
   schedule:
     - cron: "30 4 * * *"
 
+
   # Allows manual testing from GitHub Actions
   workflow_dispatch:
 
