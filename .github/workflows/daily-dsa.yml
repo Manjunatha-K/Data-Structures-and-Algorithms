@@ -1,32 +1,167 @@
-﻿name: Daily DSA Commit
+﻿name: Daily Vacation DSA Commit
 
 on:
   schedule:
+    # 10:00 AM IST = 04:30 UTC
     - cron: "30 4 * * *"
 
   workflow_dispatch:
+    inputs:
+      day:
+        description: "Day to publish manually"
+        required: true
+        type: choice
+        options:
+          - day01
+          - day02
+          - day03
+          - day04
+          - day05
+          - day06
+          - day07
+          - day08
+          - day09
+          - day10
+          - day11
+          - day12
+          - day13
+          - day14
+          - day15
+          - day16
 
 permissions:
   contents: write
 
 jobs:
-  daily-commit:
+  daily-dsa:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+
+      # --------------------------------------------------
+      # Checkout MAIN
+      # --------------------------------------------------
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
+      # --------------------------------------------------
+      # Get latest feature/linkedList branch
+      # --------------------------------------------------
+      - name: Fetch feature/linkedList branch
+        run: |
+          git fetch origin feature/linkedList:feature/linkedList
+
+      # --------------------------------------------------
+      # Determine which day should be published
+      # --------------------------------------------------
+      - name: Determine vacation day
+        id: vacation
+        shell: bash
+        run: |
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
+            DAY="${{ inputs.day }}"
+
+            echo "Manual execution selected."
+            echo "Publishing: $DAY"
+
+          else
+
+            TODAY=$(date -u +%Y-%m-%d)
+
+            START_DATE="2026-10-23"
+            END_DATE="2026-11-07"
+
+            echo "Today's date: $TODAY"
+
+            if [[ "$TODAY" < "$START_DATE" || "$TODAY" > "$END_DATE" ]]; then
+              echo "Today is outside the vacation schedule."
+              echo "run=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            START_SECONDS=$(date -d "$START_DATE" +%s)
+            TODAY_SECONDS=$(date -d "$TODAY" +%s)
+
+            DAYS=$(( (TODAY_SECONDS - START_SECONDS) / 86400 + 1 ))
+
+            DAY=$(printf "day%02d" "$DAYS")
+
+            echo "Automatic execution."
+            echo "Vacation day: $DAY"
+
+          fi
+
+          echo "run=true" >> "$GITHUB_OUTPUT"
+          echo "day=$DAY" >> "$GITHUB_OUTPUT"
+
+      # --------------------------------------------------
+      # Copy today's package from feature/linkedList
+      # --------------------------------------------------
+      - name: Publish today's DSA package
+        if: steps.vacation.outputs.run == 'true'
+        shell: bash
+        run: |
+
+          DAY="${{ steps.vacation.outputs.day }}"
+
+          SOURCE_PATH="DataStructureAndAlgorithms/src/main/java/com/learn/DataStructureAndAlgorithms/vacation/${DAY}"
+
+          echo "=========================================="
+          echo "Publishing DSA package"
+          echo "Branch : feature/linkedList"
+          echo "Day    : ${DAY}"
+          echo "Source : ${SOURCE_PATH}"
+          echo "=========================================="
+
+          # Verify that the package exists in feature/linkedList
+          if ! git cat-file -e "feature/linkedList:${SOURCE_PATH}" 2>/dev/null; then
+            echo "ERROR: ${SOURCE_PATH} does not exist in feature/linkedList"
+            exit 1
+          fi
+
+          # Extract the package from feature/linkedList
+          git archive feature/linkedList "${SOURCE_PATH}" | tar -x
+
+          echo ""
+          echo "Successfully copied ${DAY}"
+
+      # --------------------------------------------------
+      # Configure Git
+      # --------------------------------------------------
       - name: Configure Git
+        if: steps.vacation.outputs.run == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create daily commit
+      # --------------------------------------------------
+      # Commit today's package
+      # --------------------------------------------------
+      - name: Commit today's DSA package
+        if: steps.vacation.outputs.run == 'true'
+        shell: bash
         run: |
-          echo "Daily DSA commit - $(date)" >> daily-dsa-log.txt
-          git add daily-dsa-log.txt
-          git commit -m "Daily DSA commit" || echo "Nothing to commit"
-          git push
+
+          DAY="${{ steps.vacation.outputs.day }}"
+
+          git add "DataStructureAndAlgorithms/src/main/java/com/learn/DataStructureAndAlgorithms/vacation/${DAY}"
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            echo "The package may already have been published."
+            exit 0
+          fi
+
+          git commit -m "Add vacation DSA ${DAY}"
+
+          git push origin main
+
+          echo ""
+          echo "=========================================="
+          echo "Successfully published ${DAY} to main"
+          echo "=========================================="
