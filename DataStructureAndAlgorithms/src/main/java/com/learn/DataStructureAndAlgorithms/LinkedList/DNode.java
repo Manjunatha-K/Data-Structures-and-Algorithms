@@ -21,4 +21,8 @@ public class DNode {
         this.next = next;
     }
 
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5a74bab (Doubly LinkedList)
