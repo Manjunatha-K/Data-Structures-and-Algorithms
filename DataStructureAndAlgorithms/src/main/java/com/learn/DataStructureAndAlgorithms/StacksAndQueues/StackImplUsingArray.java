@@ -11,7 +11,7 @@ public class StackImplUsingArray {
 
     private void top() {
         if (currentSize == 0) {
-            System.out.println("Queue is empty");
+            System.out.println("Stack is empty");
             return;
         }
         System.out.println("Top element is : " + arr[top]);
