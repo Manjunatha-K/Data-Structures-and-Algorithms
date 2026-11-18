@@ -50,22 +50,29 @@ public class StackUsingQueue2 {
 
     public static void main(String[] args) {
         StackUsingQueue2 stack = new StackUsingQueue2();
-        stack.push(10);
         stack.push(11);
         stack.push(12);
         stack.push(13);
         stack.push(14);
-        stack.top();
-        stack.pop();
-        System.out.println("Stack size : " + stack.size());
-        stack.pop();
-        stack.pop();
-        System.out.println("Stack size : " + stack.size());
-        stack.top();
-        System.out.println("Stack size : " + stack.size());
         stack.push(15);
         stack.push(16);
         stack.push(17);
+        stack.push(18);
+        stack.push(19);
+        stack.push(20);
+        stack.push(21);
+        stack.push(22);
+        stack.top();
+        stack.pop();
+        System.out.println("Stack size : " + stack.size());
+        stack.pop();
+        stack.pop();
+        stack.push(21);
+        stack.push(22);
+        System.out.println("Stack size : " + stack.size());
+        stack.top();
+        System.out.println("Stack size : " + stack.size());
+
         stack.pop();
         stack.top();
         System.out.println("Stack size : " + stack.size());
